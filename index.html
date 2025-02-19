@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEXA - AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        body {
+            background: linear-gradient(45deg, #4158D0, #C850C0, #FFCC70);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+    <div class="glass rounded-xl p-8 w-full max-w-md text-white">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-4">LEXA</h1>
+            <p class="text-lg">Your AI Assistant</p>
+        </div>
+
+        <div class="flex flex-col items-center mb-8">
+            <div id="aiCircle" class="w-32 h-32 rounded-full glass flex items-center justify-center mb-4 pulse">
+                <i class="bi bi-mic-fill text-4xl"></i>
+            </div>
+            <p id="status" class="text-lg">Click to speak</p>
+        </div>
+
+        <div id="response" class="glass p-4 rounded-lg mb-4 min-h-[100px] text-center">
+            Hey! I'm LEXA. How can I help you today?
+        </div>
+
+        <div class="flex justify-center gap-4">
+            <button id="startBtn" class="glass px-6 py-2 rounded-full hover:bg-white/30 transition-all">
+                Start Listening
+            </button>
+            <button id="stopBtn" class="glass px-6 py-2 rounded-full hover:bg-white/30 transition-all hidden">
+                Stop Listening
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const aiCircle = document.getElementById('aiCircle');
+        const status = document.getElementById('status');
+        const response = document.getElementById('response');
+
+        let recognition;
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                status.textContent = 'Listening...';
+                startBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+                aiCircle.classList.add('pulse');
+            };
+
+            recognition.onend = () => {
+                status.textContent = 'Click to speak';
+                startBtn.classList.remove('hidden');
+                stopBtn.classList.add('hidden');
+                aiCircle.classList.remove('pulse');
+            };
+
+            recognition.onresult = (event) => {
+                const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                response.textContent = `You said: ${command}`;
+
+                if (command.includes('open youtube')) {
+                    window.open('https://www.youtube.com', '_blank');
+                    response.textContent = 'Opening YouTube...';
+                } else if (command.includes('open google')) {
+                    window.open('https://www.google.com', '_blank');
+                    response.textContent = 'Opening Google...';
+                } else if (command.includes('hello lexa')) {
+                    const utterance = new SpeechSynthesisUtterance('Hello! How can I help you today?');
+                    speechSynthesis.speak(utterance);
+                    response.textContent = 'Hello! How can I help you today?';
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                status.textContent = 'Error occurred. Please try again.';
+            };
+
+            startBtn.addEventListener('click', () => {
+                recognition.start();
+            });
+
+            stopBtn.addEventListener('click', () => {
+                recognition.stop();
+            });
+        } else {
+            response.textContent = 'Speech recognition is not supported in your browser.';
+            startBtn.disabled = true;
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
